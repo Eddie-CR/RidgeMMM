@@ -1,0 +1,567 @@
+library(Robyn)  
+
+## force multicore when using RStudio
+Sys.setenv(R_FUTURE_FORK_ENABLE="true")
+options(future.fork.enable = TRUE)
+
+# install.packages("reticulate") # Install reticulate first if you haven't already
+library("reticulate") # Load the library
+
+
+virtualenv_create("r-reticulate")
+use_virtualenv("r-reticulate", required = TRUE)
+py_install("nevergrad", pip = TRUE)
+py_config() # Check your python version and configurations
+
+
+
+
+conv_spend <- rbind(
+  select(filter(features2_1, Date < "2021-12-31"), -trader_rate, -...1),
+  features.upd)
+
+
+gtrends.buy_btc$interest_over_time %>% 
+  ggplot(aes(date, hits)) + geom_line()
+
+features <- 
+  conv_spend %>% 
+  inner_join(btc, "Date") %>% 
+  inner_join(doge, "Date") %>% 
+  inner_join(btc_trends, 
+            by = "Date") %>% 
+  select(-keyword)
+
+features[is.na(features)] <- 0
+features %>% 
+  ggplot(aes(Date, btc_volume)) + geom_line()
+str(features)
+features[c(
+  "Date", "buy_btc.gtrends"
+)]
+################################################################
+#### Step 2a: For first time user: Model specification in 4 steps
+
+#### 2a-1: First, specify input variables
+remarketing/prospecting
+impressions
+campaign type : app/web
+coins:
+match type
+URL
+
+
+InputCollect.signups <- robyn_inputs(
+  dt_input = features
+  ,dt_holidays = dt_prophet_holidays
+  ,date_var = "Date" # date format must be "2020-01-01"
+  ,dep_var = "signups" # there should be only one dependent variable
+  ,dep_var_type = "conversion" # "revenue" or "conversion"
+  ,prophet_vars = c("trend", "season", "holiday", "weekday") # "trend","season", "weekday" & "holiday"
+  ,prophet_country = "US"# input one country. dt_prophet_holidays includes 59 countries by default
+  ,context_vars = c("btc_price", "btc_volume", "btc_gtrend", 
+                    "doge_price", "doge_volume") # e.g. competitors, discount, unemployment etc
+  ,paid_media_spends = c("Bing","Discovery"	,"Facebook", 
+                         "GDN", "NonBrand", "Reddit", "Roku", 
+                          "Snap", "Twitter", "UAC", "YouTube",
+                         "iHeart", "TMobile", "TikTok", "Twitch") # mandatory input
+  ,paid_media_vars = c("Bing","Discovery"	,"Facebook", 
+                       "GDN", "NonBrand", "Reddit", "Roku", 
+                       "Snap", "Twitter", "UAC", "YouTube",
+                       "iHeart", "TMobile", "TikTok", "Twitch") # mandatory.
+  # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
+  # impressions, GRP etc. If not applicable, use spend instead.
+  ,organic_vars = NULL# marketing activity without media spend
+  ,factor_vars = NULL # specify which variables in context_vars or organic_vars are factorial
+  ,window_start = "2020-10-02"
+  ,window_end = "2022-02-20"
+  ,adstock = "geometric" # geometric, weibull_cdf or weibull_pdf.
+)
+print(InputCollect.signups)
+# ?robyn_inputs for more info
+
+#### 2a-2: Second, define and add hyperparameters
+
+
+
+
+
+plot_adstock(plot = TRUE)
+plot_saturation(plot = TRUE)
+
+
+
+
+
+
+## 4. Set individual hyperparameter bounds. They either contain two values e.g. c(0, 0.5),
+# or only one value, in which case you'd "fixed" that hyperparameter
+
+# Run hyper_limits() to check maximum upper and lower bounds by range
+# Example hyperparameters ranges for Geometric adstock
+hyperparameters <- list(
+  Bing_alphas = c(0.5, 3)
+  ,Bing_gammas = c(0.3, 1)
+  ,Bing_thetas = c(0.1, 0.3)
+  
+  ,Discovery_alphas = c(0.5, 3)
+  ,Discovery_gammas = c(0.3, 1)
+  ,Discovery_thetas = c(0.1, 0.3)
+  
+  ,Facebook_alphas = c(0.5, 3)
+  ,Facebook_gammas = c(0.3, 1)
+  ,Facebook_thetas = c(0, 0.3)
+  
+  ,GDN_alphas = c(0.5, 3)
+  ,GDN_gammas = c(0.3, 1)
+  ,GDN_thetas = c(0.1, 0.3)
+  
+  ,iHeart_alphas = c(0.5, 3)
+  ,iHeart_gammas = c(0.3, 1)
+  ,iHeart_thetas = c(0.1, 0.5)
+  
+  ,NonBrand_alphas = c(0.5, 3)
+  ,NonBrand_gammas = c(0.3, 1)
+  ,NonBrand_thetas = c(0.0, 0.4)  
+  
+  ,Reddit_alphas = c(0.5, 3)
+  ,Reddit_gammas = c(0.3, 1)
+  ,Reddit_thetas = c(0.1, 0.5)
+  
+  ,Roku_alphas = c(0.5, 3)
+  ,Roku_gammas = c(0.3, 1)
+  ,Roku_thetas = c(0.1, 0.4)
+  
+  ,Snap_alphas = c(0.5, 3)
+  ,Snap_gammas = c(0.3, 1)
+  ,Snap_thetas = c(0.1, 0.5)
+  
+  ,TikTok_alphas = c(0.5, 3)
+  ,TikTok_gammas = c(0.3, 1)
+  ,TikTok_thetas = c(0.1, 0.5)
+  
+  ,TMobile_alphas = c(0.5, 3)
+  ,TMobile_gammas = c(0.3, 1)
+  ,TMobile_thetas = c(0.1, 0.5)
+  
+  ,Twitch_alphas = c(0.5, 3)
+  ,Twitch_gammas = c(0.3, 1)
+  ,Twitch_thetas = c(0.1, 0.4)
+  
+  ,Twitter_alphas = c(0.5, 3)
+  ,Twitter_gammas = c(0.3, 1)
+  ,Twitter_thetas = c(0.1, 0.4)
+  
+  ,UAC_alphas = c(0.5, 3)
+  ,UAC_gammas = c(0.3, 1)
+  ,UAC_thetas = c(0.1, 0.3)
+
+  ,YouTube_alphas = c(0.5, 3)
+  ,YouTube_gammas = c(0.3, 1)
+  ,YouTube_thetas = c(0.1, 0.5)
+
+)
+
+# Example hyperparameters ranges for Weibull CDF adstock
+# facebook_S_alphas = c(0.5, 3)
+# facebook_S_gammas = c(0.3, 1)
+# facebook_S_shapes = c(0.0001, 2)
+# facebook_S_scales = c(0, 0.1)
+
+# Example hyperparameters ranges for Weibull PDF adstock
+# facebook_S_alphas = c(0.5, 3
+# facebook_S_gammas = c(0.3, 1)
+# facebook_S_shapes = c(0.0001, 10)
+# facebook_S_scales = c(0, 0.1)
+
+#### 2a-3: Third, add hyperparameters into robyn_inputs()
+
+InputCollect.signups <- 
+  robyn_inputs(InputCollect = InputCollect.signups,
+               hyperparameters = hyperparameters)
+print(InputCollect.signups)
+
+#### 2a-4: Fourth (optional), model calibration / add experimental input
+
+
+# dt_calibration <- data.frame(
+#   channel = c("facebook_S",  "tv_S", "facebook_S")
+#   # channel name must in paid_media_vars
+#   , liftStartDate = as.Date(c("2018-05-01", "2017-11-27", "2018-07-01"))
+#   # liftStartDate must be within input data range
+#   , liftEndDate = as.Date(c("2018-06-10", "2017-12-03", "2018-07-20"))
+#   # liftEndDate must be within input data range
+#   , liftAbs = c(400000, 300000, 200000) # Provided value must be
+#   # tested on same campaign level in model and same metric as dep_var_type
+# )
+#
+# InputCollect <- robyn_inputs(InputCollect = InputCollect
+#                              , calibration_input = dt_calibration)
+
+
+################################################################
+#### Step 2b: For known model specification, setup in one single step
+
+## Specify hyperparameters as in 2a-2 and optionally calibration as in 2a-4 and provide them directly in robyn_inputs()
+
+# InputCollect <- robyn_inputs(
+#   dt_input = dt_simulated_weekly
+#   ,dt_holidays = dt_prophet_holidays
+#   ,date_var = "DATE"
+#   ,dep_var = "revenue"
+#   ,dep_var_type = "revenue"
+#   ,prophet_vars = c("trend", "season", "holiday")
+#   ,prophet_country = "DE"
+#   ,context_vars = c("competitor_sales_B", "events")
+#   ,paid_media_spends = c("tv_S", "ooh_S",	"print_S", "facebook_S", "search_S")
+#   ,paid_media_vars = c("tv_S", "ooh_S", 	"print_S", "facebook_I", "search_clicks_P")
+#   ,organic_vars = c("newsletter")
+#   ,factor_vars = c("events")
+#   ,window_start = "2016-11-23"
+#   ,window_end = "2018-08-22"
+#   ,adstock = "geometric"
+#   ,hyperparameters = hyperparameters # as in 2a-2 above
+#   #,calibration_input = dt_calibration # as in 2a-4 above
+# )
+
+################################################################
+#### Step 3: Build initial model
+
+## Run all trials and iterations. Use ?robyn_run to check parameter definition
+## Run all trials and iterations. Use ?robyn_run to check parameter definition
+OutputModels.signups <- robyn_run(
+  InputCollect = InputCollect.signups  # feed in all model specification
+  #, cores = NULL # default
+  #, add_penalty_factor = FALSE # Untested feature. Use with caution.
+  , iterations = 2000 # recommended for the dummy dataset
+  , trials = 5 # recommended for the dummy dataset
+  , outputs = FALSE # outputs = FALSE disables direct model output
+)
+  print(OutputModels_signups)
+ 
+## Check MOO (multi-objective optimization) convergence plots
+OutputModels_signups$convergence$moo_distrb_plot
+OutputModels$convergence$moo_cloud_plot
+# check convergence rules ?robyn_converge
+?robyn_outputs
+## Calculate Pareto optimality, cluster and export results and plots. See ?robyn_outputs
+OutputCollect.signups <- robyn_outputs(
+  InputCollect.signups 
+  , OutputModels_signups
+  , pareto_fronts = 2
+  # , calibration_constraint = 0.1 # range c(0.01, 0.1) & default at 0.1
+  , csv_out = "all" # "pareto" or "all"
+  , clusters = TRUE # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
+  , plot_pareto = TRUE # Set to FALSE to deactivate plotting and saving model one-pagers
+  , plot_folder = robyn_object # path for plots export
+)
+print(OutputCollect.signups)
+
+## Run & output in one go
+# OutputCollect <- robyn_run(
+#   InputCollect = InputCollect
+#   #, cores = NULL
+#   , iterations = 200
+#   , trials = 2
+#   #, add_penalty_factor = FALSE
+#   , outputs = TRUE
+#   , pareto_fronts = 3
+#   , csv_out = "pareto"
+#   , clusters = TRUE
+#   , plot_pareto = TRUE
+#   , plot_folder = robyn_object
+# )
+# convergence <- robyn_converge(OutputModels)
+# convergence$moo_distrb_plot
+# convergence$moo_cloud_plot
+# print(OutputCollect)
+
+
+# pareto_hyperparameters.csv, hyperparameters per Pareto output model
+# pareto_aggregated.csv, aggregated decomposition per independent variable of all Pareto output
+# pareto_media_transform_matrix.csv, all media transformation vectors
+# pareto_alldecomp_matrix.csv, all decomposition vectors of independent variables
+
+
+
+
+print(OutputCollect.signups)
+select_model.signups <- "2_218_8" # select one from above
+robyn_save(robyn_object = robyn_object # model object location and name
+           , select_model = select_model.signups # selected model ID
+           , InputCollect = InputCollect.signups # all model input
+           , OutputCollect = OutputCollect.signups # all model output
+)
+
+################################################################
+#### Step 5: Get budget allocation based on the selected model above
+
+## Budget allocation result requires further validation. Please use this recommendation with caution.
+## Don't interpret budget allocation result if selected model above doesn't meet business expectation.
+
+# Check media summary for selected model
+outc.signups <- OutputCollect.signups$xDecompAgg[solID == select_model & !is.na(mean_spend)
+                         , .(rn, coef,mean_spend, mean_response, total_spend,
+                              total_response=xDecompAgg,  cpa_total)]
+write.csv(outc.signups, 
+          "C:\\Users\\eddie\\OneDrive\\Documents\\robyn\\outc_signups.csv",
+          row.names = FALSE)
+
+# Run ?robyn_allocator to check parameter definition
+# Run the "max_historical_response" scenario: "What's the revenue lift potential with the
+# same historical spend level and what is the spend mix?"
+AllocatorCollect.signups <- robyn_allocator(
+  InputCollect = InputCollect.signups
+  , OutputCollect = OutputCollect.signups
+  , select_model = select_model.signups
+  , scenario = "max_historical_response"
+  , channel_constr_low =  c(0.3, #Bing
+                            0.01, #Discovery
+                            0.2, #Facebook
+                            0.4, #GDN
+                            0.7, #NonBrand
+                            0.7, #Reddit
+                            0.01, #Roku
+                            0.01, #Snap
+                            0.5, #Twitter, 
+                            0.5, #UAC
+                            0.01, #YouTube
+                            0.01, #iheart
+                            0.01, #TMobile
+                            0.01, #TikTok
+                            0.01  #Twitch
+  )
+  , channel_constr_up =  c(1.5, #Bing
+                           .01,   #Discovery
+                           1, #Facebook
+                           2,   #GDN
+                           2, #NonBrand
+                           4,   #Reddit
+                           .01, #Roku
+                           .01, #Snap
+                           2.5,   #Twitter
+                           2, #UAC, 
+                           .01, #YouTube
+                           .01,   #iheart
+                           .01,   #TMobile
+                           .01,   #TikTok
+                           .01   #Twitch
+  ) 
+)
+
+str(features)
+print(AllocatorCollect.signups)
+AllocatorCollect.signups$dt_optimOut
+
+AllocatorCollect.signups$plots$p14
+
+# Run the "max_response_expected_spend" scenario: "What's the maximum response for a given
+# total spend based on historical saturation and what is the spend mix?" "optmSpendShareUnit"
+# is the optimum spend share.
+AllocatorCollect.signups <- robyn_allocator(
+  InputCollect = InputCollect.signups
+  , OutputCollect = OutputCollect.signups
+  , select_model = select_model.signups
+  , scenario = "max_response_expected_spend"
+  , channel_constr_low = c(0.9, #Bing
+                           0.2, #Discovery
+                           0.2, #Facebook
+                           1.7, #GDN
+                           0.9, #NonBrand
+                           0.7, #Reddit
+                           0.7, #Roku
+                           0.7, #Snap
+                           0.5, #Twitter, 
+                           0.5, #UAC
+                           0.2, #YouTube
+                           0.5, #iheart
+                           0.5, #TMobile
+                           0.5, #TikTok
+                           0.5  #Twitch
+                           )
+  , channel_constr_up = c(1.6, #Bing
+                          1.5,   #Discovery
+                          1.8, #Facebook
+                          2,   #GDN
+                          1.7, #NonBrand
+                          4,   #Reddit
+                          1.2, #Roku
+                          1.6, #Snap
+                          3,   #Twitter
+                          1.4, #UAC, 
+                          1.5, #YouTube
+                          2.5,   #iheart
+                          2.5,   #TMobile
+                          2.5,   #TikTok
+                          2    #Twitch
+                          ) 
+  , expected_spend = 5150000 # Total spend to be simulated
+  , expected_spend_days = 30 # Duration of expected_spend in days
+)
+print(AllocatorCollect.signups)
+AllocatorCollect$dt_optimOut
+
+features %>% 
+  ggplot(aes(Date, NonBrand)) + geom_line()
+
+## A csv is exported into the folder for further usage. Check schema here:
+## https://github.com/facebookexperimental/Robyn/blob/main/demo/schema.R
+
+## QA optimal response
+if (TRUE) {
+  cat("QA if results from robyn_allocator and robyn_response agree: ")
+  select_media <- "NonBrand"
+  optimal_spend <- AllocatorCollect$dt_optimOut[channels== select_media, optmSpendUnit]
+  optimal_response_allocator <- AllocatorCollect$dt_optimOut[channels== select_media, optmResponseUnit]
+  optimal_response <- robyn_response(
+    robyn_object = robyn_object,
+    select_build = 0,
+    media_metric = select_media,
+    metric_value = optimal_spend)
+  cat(round(optimal_response_allocator) == round(optimal_response$response), "( ")
+  plot(optimal_response$plot)
+  cat(optimal_response$response, "==", optimal_response_allocator, ")\n")
+}
+
+
+
+# Run ?robyn_refresh to check parameter definition
+Robyn <- robyn_refresh(
+  robyn_object = robyn_object
+  , dt_input = dt_simulated_weekly
+  , dt_holidays = dt_prophet_holidays
+  , refresh_steps = 13
+  , refresh_mode = "auto"
+  , refresh_iters = 1000 # 1k is estimation. Use refresh_mode = "manual" to try out.
+  , refresh_trials = 3
+  , clusters = TRUE
+)
+
+features
+################################################################
+#### Step 7: Get budget allocation recommendation based on selected refresh runs
+
+# Run ?robyn_allocator to check parameter definition
+AllocatorCollect <- robyn_allocator(
+  robyn_object = robyn_object
+  #, select_build = 1 # Use third refresh model
+  , scenario = "max_response_expected_spend"
+  , channel_constr_low =  c(0.3, #Bing
+                            0.0, #Discovery
+                            0.1, #Facebook
+                            0.0, #GDN
+                            0.7, #NonBrand
+                            0.7, #Reddit
+                            0.7, #Roku
+                            0.7, #Snap
+                            0.5, #Twitter,
+                            0.5, #UAC, 
+                            0.0, # YouTube
+                            0.0, #iHeart
+                            0.0, #TMobile
+                            0.0,  #TikTok
+                            0.5) #Twitch
+  , channel_constr_up = c(1.5, #Bing
+                          3, #Discoveru
+                          1.8, #Facebook
+                          0.4, #GDN
+                          0.7, #NonBrand
+                          0.7, #Reddit
+                          0.7, #Roku
+                          0.7, #Snap
+                          0.5, #Twitter, 
+                          1.2, #UAC
+                          1.2, #YouTube
+                          0.0, #iHeart
+                          0.0, #TMobile
+                          0.0, #TikTok
+                          0.5) #Twitch
+  , expected_spend = 6000000 # Total spend to be simulated
+  , expected_spend_days = 30 # Duration of expected_spend in days
+)
+print(AllocatorCollect)
+AllocatorCollect$plots
+AllocatorCollect$dt_optimOut
+
+AllocatorCollect$nlsMod
+
+
+features
+################################################################
+#### Step 8: get marginal returns
+
+## Example of how to get marginal ROI of next 1000$ from the 80k spend level for search channel
+
+# Run ?robyn_response to check parameter definition
+
+## -------------------------------- NOTE v3.6.0 CHANGE !!! ---------------------------------- ##
+## The robyn_response() function can now output response for both spends and exposures (imps,
+## GRP, newsletter sendings etc.) as well as plotting individual saturation curves. New
+## argument names "media_metric" and "metric_value" instead of "paid_media_var" and "spend"
+## are now used to accommodate this change. Also the returned output is a list now and
+## contains also the plot.
+## ------------------------------------------------------------------------------------------ ##
+
+# Get response for 80k from result saved in robyn_object
+Spend1 <-10000
+Response1 <- robyn_response(
+  robyn_object = robyn_object.
+  #, select_build = 1 # 2 means the second refresh model. 0 means the initial model
+  , media_metric = "NonBrand"
+  , metric_value = Spend1)
+Response1$response/Spend1 # ROI for search 80k
+Response1$plot
+
+# Get response for 81k
+Spend2 <- Spend1 + 5000
+Response2 <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1
+  , media_metric = "Reddit"
+  , metric_value = Spend2)
+Response2$response/Spend2 # ROI for search 81k
+Response2$plot
+
+# Marginal ROI of next 1000$ from 80k spend level for search
+(Response2$response - Response1$response)/(Spend2 - Spend1)
+
+## Example of getting paid media exposure response curves
+imps <- 5000000
+response_imps <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1
+  , media_metric = "facebook_I"
+  , metric_value = imps)
+response_imps$response / imps * 1000
+response_imps$plot
+
+## Example of getting organic media exposure response curves
+sendings <- 30000
+response_sending <- robyn_response(
+  robyn_object = robyn_object
+  #, select_build = 1
+
+  , media_metric = "newsletter"
+  , metric_value = sendings)
+response_sending$response / sendings * 1000
+response_sending$plot
+
+################################################################
+#### Optional: get old model results
+
+# Get old hyperparameters and select model
+dt_hyper_fixed <- data.table::fread("~/Desktop/2022-02-21 11.29 rf11/pareto_hyperparameters.csv")
+select_model <- "2_203_5"
+dt_hyper_fixed <- dt_hyper_fixed[solID == select_model]
+
+OutputCollectFixed <- robyn_run(
+  # InputCollect must be provided by robyn_inputs with same dataset and parameters as before
+  InputCollect = InputCollect
+  , plot_folder = robyn_object
+  , dt_hyper_fixed = dt_hyper_fixed)
+
+# Save Robyn object for further refresh
+robyn_save(robyn_object = robyn_object
+           , select_model = select_model
+           , InputCollect = InputCollect
+           , OutputCollect = OutputCollectFixed)
